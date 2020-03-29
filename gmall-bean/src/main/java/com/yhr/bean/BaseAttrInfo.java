@@ -1,0 +1,20 @@
+package com.yhr.bean;
+
+import lombok.Data;
+
+import javax.persistence.Column;
+import javax.persistence.Id;
+import java.io.Serializable;
+
+@Data
+public class BaseAttrInfo implements Serializable{
+
+    @Id
+    @Column
+    private String id;
+    @Column
+    private String attrName;
+    @Column
+    private String catalog3Id;
+
+}
