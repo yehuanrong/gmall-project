@@ -1,13 +1,11 @@
 package com.yhr.gmall.manager.service.impl;
 
 import com.alibaba.dubbo.config.annotation.Service;
-import com.yhr.bean.BaseAttrInfo;
-import com.yhr.bean.BaseCatalog1;
-import com.yhr.bean.BaseCatalog2;
-import com.yhr.bean.BaseCatalog3;
+import com.yhr.bean.*;
 import com.yhr.gmall.manager.mapper.*;
 import com.yhr.service.ManagerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -28,6 +26,9 @@ public class ManagerServiceImpl implements ManagerService{
 
     @Autowired
     private BaseAttrValueMapper baseAttrValueMapper;
+
+    @Autowired
+    private SpuInfoMapper spuInfoMapper;
 
     @Override
     public List<BaseCatalog1> getCatalog1() {
@@ -56,5 +57,72 @@ public class ManagerServiceImpl implements ManagerService{
         BaseAttrInfo baseAttrInfo=new BaseAttrInfo();
         baseAttrInfo.setCatalog3Id(catalog3Id);
         return baseAttrInfoMapper.select(baseAttrInfo);
+    }
+
+    @Transactional
+    @Override
+    public void saveAttrInfo(BaseAttrInfo baseAttrInfo) {
+
+        if(baseAttrInfo.getId()!=null && baseAttrInfo.getId().length()>0){
+
+            baseAttrInfoMapper.updateByPrimaryKeySelective(baseAttrInfo);
+        }else{
+
+            //保存数据 baseAttrInfo
+            baseAttrInfoMapper.insertSelective(baseAttrInfo);
+        }
+
+        //baseAttrValue?先清空，再插入
+        BaseAttrValue baseAttrValueDel=new BaseAttrValue();
+        baseAttrValueDel.setAttrId(baseAttrInfo.getId());
+        baseAttrValueMapper.delete(baseAttrValueDel);
+
+        List<BaseAttrValue> attrValueList = baseAttrInfo.getAttrValueList();
+
+        if(attrValueList !=null && attrValueList.size()>0){
+
+            for (BaseAttrValue baseAttrValue:attrValueList){
+
+                baseAttrValue.setAttrId(baseAttrInfo.getId());
+                baseAttrValueMapper.insertSelective(baseAttrValue);
+            }
+        }
+
+    }
+
+
+   /* @Override
+    public List<BaseAttrValue> getAttrValueList(String attrId) {
+
+        BaseAttrValue baseAttrValue=new BaseAttrValue();
+
+        baseAttrValue.setAttrId(attrId);
+
+        List<BaseAttrValue> baseAttrValueList = baseAttrValueMapper.select(baseAttrValue);
+
+        return baseAttrValueList;
+    }*/
+
+    @Override
+    public BaseAttrInfo getAttrInfo(String attrId) {
+
+        BaseAttrInfo baseAttrInfo = baseAttrInfoMapper.selectByPrimaryKey(attrId);
+
+        BaseAttrValue baseAttrValue=new BaseAttrValue();
+
+        baseAttrValue.setAttrId(attrId);
+
+        List<BaseAttrValue> baseAttrValueList = baseAttrValueMapper.select(baseAttrValue);
+
+        baseAttrInfo.setAttrValueList(baseAttrValueList);
+
+        return baseAttrInfo;
+    }
+
+    @Override
+    public List<SpuInfo> getSpuList(SpuInfo spuInfo) {
+
+        List<SpuInfo> spuInfoList = spuInfoMapper.select(spuInfo);
+        return spuInfoList;
     }
 }

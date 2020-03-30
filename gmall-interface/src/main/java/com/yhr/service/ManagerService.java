@@ -1,9 +1,6 @@
 package com.yhr.service;
 
-import com.yhr.bean.BaseAttrInfo;
-import com.yhr.bean.BaseCatalog1;
-import com.yhr.bean.BaseCatalog2;
-import com.yhr.bean.BaseCatalog3;
+import com.yhr.bean.*;
 
 import java.util.List;
 
@@ -35,4 +32,31 @@ public interface ManagerService {
      * @return
      */
     List<BaseAttrInfo> getAttrList(String catalog3Id);
+
+    /**
+     * 保存平台属性数据
+     * @param baseAttrInfo
+     */
+    void saveAttrInfo(BaseAttrInfo baseAttrInfo);
+
+    /**
+     * 根据平台属性id查询平台属性值
+     * @param attrId
+     * @return
+     */
+    //List<BaseAttrValue> getAttrValueList(String attrId);
+
+    /**
+     * 根据平台属性id查询平台属性对象
+     * @param attrId
+     * @return
+     */
+    BaseAttrInfo getAttrInfo(String attrId);
+
+    /**
+     * 根据spuinfo对象获取spuinfo集合
+     * @param spuInfo
+     * @return
+     */
+    List<SpuInfo> getSpuList(SpuInfo spuInfo);
 }
