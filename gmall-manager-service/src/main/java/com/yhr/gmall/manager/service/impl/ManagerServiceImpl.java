@@ -30,6 +30,18 @@ public class ManagerServiceImpl implements ManagerService{
     @Autowired
     private SpuInfoMapper spuInfoMapper;
 
+    @Autowired
+    private BaseSaleAttrMapper baseSaleAttrMapper;
+
+    @Autowired
+    private SpuImageMapper spuImageMapper;
+
+    @Autowired
+    private SpuSaleAttrValueMapper spuSaleAttrValueMapper;
+
+    @Autowired
+    private SpuSaleAttrMapper spuSaleAttrMapper;
+
     @Override
     public List<BaseCatalog1> getCatalog1() {
         return baseCatalog1Mapper.selectAll();
@@ -125,4 +137,54 @@ public class ManagerServiceImpl implements ManagerService{
         List<SpuInfo> spuInfoList = spuInfoMapper.select(spuInfo);
         return spuInfoList;
     }
+
+    @Override
+    public List<BaseSaleAttr> getBaseSaleAttrList() {
+        return baseSaleAttrMapper.selectAll();
+    }
+
+    @Override
+    @Transactional
+    public void saveSpuInfo(SpuInfo spuInfo) {
+
+        spuInfoMapper.insertSelective(spuInfo);
+
+        List<SpuImage> spuImageList = spuInfo.getSpuImageList();
+
+        if(spuImageList!=null && spuImageList.size()>0){
+
+            for (SpuImage spuImage : spuImageList) {
+
+                //设置spuId
+                spuImage.setSpuId(spuInfo.getId());
+                spuImageMapper.insertSelective(spuImage);
+            }
+        }
+
+        List<SpuSaleAttr> spuSaleAttrList = spuInfo.getSpuSaleAttrList();
+
+        if(spuSaleAttrList!=null && spuSaleAttrList.size()>0){
+
+            for (SpuSaleAttr spuSaleAttr : spuSaleAttrList) {
+
+                spuSaleAttr.setSpuId(spuInfo.getId());
+
+                spuSaleAttrMapper.insertSelective(spuSaleAttr);
+
+                List<SpuSaleAttrValue> spuSaleAttrValueList = spuSaleAttr.getSpuSaleAttrValueList();
+
+                if(spuSaleAttrValueList!=null && spuSaleAttrValueList.size()>0){
+
+                    for (SpuSaleAttrValue spuSaleAttrValue : spuSaleAttrValueList) {
+
+                        spuSaleAttrValue.setSpuId(spuInfo.getId());
+
+                        spuSaleAttrValueMapper.insertSelective(spuSaleAttrValue);
+                    }
+                }
+            }
+        }
+
+    }
+
 }

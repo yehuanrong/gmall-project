@@ -59,4 +59,16 @@ public interface ManagerService {
      * @return
      */
     List<SpuInfo> getSpuList(SpuInfo spuInfo);
+
+    /**
+     * 获取所有的销售数据
+     * @return
+     */
+    List<BaseSaleAttr> getBaseSaleAttrList();
+
+    /**
+     * 保存spuInfo
+     * @param spuInfo
+     */
+    void saveSpuInfo(SpuInfo spuInfo);
 }

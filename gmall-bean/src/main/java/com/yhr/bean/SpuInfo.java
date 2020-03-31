@@ -7,6 +7,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.io.Serializable;
+import java.util.List;
 
 @Data
 public class SpuInfo implements Serializable{
@@ -23,5 +24,12 @@ public class SpuInfo implements Serializable{
 
     @Column
     private  String catalog3Id;
+
+
+    private List<SpuSaleAttr> spuSaleAttrList;
+
+
+    private List<SpuImage> spuImageList;
+
 
 }

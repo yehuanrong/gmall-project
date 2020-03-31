@@ -59,4 +59,11 @@ public class ManagerController {
 
         return baseAttrInfo.getAttrValueList();
     }
+
+    @RequestMapping("/baseSaleAttrList")
+    public List<BaseSaleAttr> baseSaleAttrList(){
+
+        return managerService.getBaseSaleAttrList();
+    }
+
 }
