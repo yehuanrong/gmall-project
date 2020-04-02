@@ -71,4 +71,14 @@ public interface ManagerService {
      * @param spuInfo
      */
     void saveSpuInfo(SpuInfo spuInfo);
+
+    List<SpuImage> getSpuImageList(SpuImage spuImage);
+
+    List<SpuSaleAttr> getSpuSaleAttrList(String spuId);
+
+    /**
+     * 保存skuInfo数据
+     * @param skuInfo
+     */
+    void saveSkuInfo(SkuInfo skuInfo);
 }
