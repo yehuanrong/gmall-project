@@ -81,4 +81,32 @@ public interface ManagerService {
      * @param skuInfo
      */
     void saveSkuInfo(SkuInfo skuInfo);
+
+    /**
+     * 根据skuId查询SkuInfo
+     * @param skuId
+     * @return
+     */
+    SkuInfo getSkuInfo(String skuId);
+
+    /**
+     * 根据skuId查询skuImage集合
+     * @param skuId
+     * @return
+     */
+    List<SkuImage> getSkuImageBySkuId(String skuId);
+
+    /**
+     * 根据spuId和skuId查询销售属性集合
+     * @param skuInfo
+     * @return
+     */
+    List<SpuSaleAttr> getSpuSaleAttrListCheckBySku(SkuInfo skuInfo);
+
+    /**
+     * 根据spuId查询销售属性值集合
+     * @param spuId
+     * @return
+     */
+    List<SkuSaleAttrValue> getSkuSaleAttrValueListBySpu(String spuId);
 }

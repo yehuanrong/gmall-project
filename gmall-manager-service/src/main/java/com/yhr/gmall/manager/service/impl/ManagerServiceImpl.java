@@ -256,4 +256,33 @@ public class ManagerServiceImpl implements ManagerService{
         }
     }
 
+    @Override
+    public SkuInfo getSkuInfo(String skuId) {
+        return skuInfoMapper.selectByPrimaryKey(skuId);
+    }
+
+    @Override
+    public List<SkuImage> getSkuImageBySkuId(String skuId) {
+
+        SkuImage skuImage=new SkuImage();
+
+        skuImage.setSkuId(skuId);
+
+        List<SkuImage> skuImageList = skuImageMapper.select(skuImage);
+
+        return skuImageList;
+    }
+
+    @Override
+    public List<SpuSaleAttr> getSpuSaleAttrListCheckBySku(SkuInfo skuInfo) {
+
+        return spuSaleAttrMapper.selectSpuSaleAttrListCheckBySku(skuInfo.getId(),skuInfo.getSpuId());
+    }
+
+    @Override
+    public List<SkuSaleAttrValue> getSkuSaleAttrValueListBySpu(String spuId) {
+
+        return skuSaleAttrValueMapper.selectSkuSaleAttrValueListBySpu(spuId);
+    }
+
 }
