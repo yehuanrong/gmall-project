@@ -1,13 +1,22 @@
 package com.yhr.gmall.manager.service.impl;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.alibaba.fastjson.JSON;
 import com.yhr.bean.*;
+import com.yhr.gmall.config.RedisUtil;
+import com.yhr.gmall.manager.constant.ManagerConst;
 import com.yhr.gmall.manager.mapper.*;
 import com.yhr.service.ManagerService;
+import org.redisson.Redisson;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import redis.clients.jedis.Jedis;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class ManagerServiceImpl implements ManagerService{
@@ -53,6 +62,9 @@ public class ManagerServiceImpl implements ManagerService{
 
     @Autowired
     private SkuInfoMapper skuInfoMapper;
+
+    @Autowired
+    private RedisUtil redisUtil;
 
     @Override
     public List<BaseCatalog1> getCatalog1() {
@@ -258,7 +270,156 @@ public class ManagerServiceImpl implements ManagerService{
 
     @Override
     public SkuInfo getSkuInfo(String skuId) {
-        return skuInfoMapper.selectByPrimaryKey(skuId);
+
+        SkuInfo skuInfo=null;
+
+        Jedis jedis= null;
+
+        RLock mylock=null;
+
+        try {
+
+            /*
+            * 使用redisson分布式锁解决缓存击穿问题
+            * */
+
+            Config config=new Config();
+
+            config.useSingleServer().setAddress("redis://192.168.126.11:6379");
+
+            RedissonClient redissonClient= Redisson.create(config);
+
+            mylock = redissonClient.getLock("mylock");
+
+            mylock.lock(10, TimeUnit.SECONDS);
+
+            jedis = redisUtil.getJedis();
+
+            String skuKey= ManagerConst.SKUKEY_PREFIX+skuId+ManagerConst.SKUKEY_SUFFIX;
+
+            if (jedis.exists(skuKey)){
+
+                String skuInfoJson = jedis.get(skuKey);
+
+                skuInfo = JSON.parseObject(skuInfoJson, SkuInfo.class);
+
+                return skuInfo;
+            }else{
+
+                skuInfo = getSkuInfoDB(skuId);
+
+                String jsonString = JSON.toJSONString(skuInfo);
+
+                jedis.setex(skuKey,ManagerConst.SKUKEY_TIMEOUT,jsonString);
+
+                return skuInfo;
+            }
+
+        }catch (Exception e){
+
+            e.printStackTrace();
+
+        }finally {
+
+            if(jedis!=null){
+
+                jedis.close();
+            }
+
+            if(mylock!=null){
+
+                mylock.unlock();
+            }
+        }
+        /*try {
+            jedis = redisUtil.getJedis();
+
+        *//** 设计redis，必须注意使用哪种数据类型来存储数据
+        * redis的五种数据类型
+        *   string:短信验证码，存储一个变量
+        *
+        *   hash:json字符串（对象转换的字符串）
+        *
+        *   list:pop队列使用
+        *
+        *   set:去重，交集，补集，并集
+        *
+        *   zset:评分，排序
+        * *//*
+            //(定义key)
+            String skuKey= ManagerConst.SKUKEY_PREFIX+skuId+ManagerConst.SKUKEY_SUFFIX;
+
+            //获取数据
+            String skuJson=jedis.get(skuKey);
+
+            //判断缓存中是否有数据，如果有，从缓存中获取
+            if(skuJson==null || skuJson.length()==0){
+
+                //试着加锁
+                String skuLockKey=ManagerConst.SKUKEY_PREFIX+skuId+ManagerConst.SKULOCK_SUFFIX;
+
+                String lockKey = jedis.set(skuLockKey, "ok", "NX", "PX", ManagerConst.SKULOCK_EXPIRE_PX);
+
+                if("ok".equals(lockKey)){
+
+                    skuInfo=getSkuInfoDB(skuId);
+
+                    String skuRedisStr = JSON.toJSONString(skuInfo);
+
+                    jedis.setex(skuKey,ManagerConst.SKUKEY_TIMEOUT,skuRedisStr);
+
+                    //删除lockKey
+                    jedis.del(skuLockKey);
+
+                    return skuInfo;
+
+                }else{
+
+                    //等待
+
+                    Thread.sleep(1000);
+                    return getSkuInfo(skuId);
+                }
+
+
+            }else{
+
+                //将json字符串转换成对象
+                skuInfo = JSON.parseObject(skuJson, SkuInfo.class);
+
+                return skuInfo;
+
+            }
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+        } finally {
+
+            if(jedis!=null){
+
+                jedis.close();
+            }
+
+        }*/
+
+        return getSkuInfoDB(skuId);
+    }
+
+    private SkuInfo getSkuInfoDB(String skuId){
+
+        SkuInfo skuInfo=skuInfoMapper.selectByPrimaryKey(skuId);
+
+        skuInfo.setSkuImageList(getSkuImageBySkuId(skuId));
+
+        //查询平台属性值集合
+        SkuAttrValue skuAttrValue=new SkuAttrValue();
+
+        skuAttrValue.setSkuId(skuId);
+
+        skuInfo.setSkuAttrValueList(skuAttrValueMapper.select(skuAttrValue));
+
+        return skuInfo;
     }
 
     @Override
