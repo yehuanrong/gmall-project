@@ -6,6 +6,7 @@ import com.yhr.bean.SkuImage;
 import com.yhr.bean.SkuInfo;
 import com.yhr.bean.SkuSaleAttrValue;
 import com.yhr.bean.SpuSaleAttr;
+import com.yhr.service.ListService;
 import com.yhr.service.ManagerService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +21,9 @@ public class ItemController {
 
     @Reference
     private ManagerService managerService;
+
+    @Reference
+    private ListService listService;
 
     @RequestMapping("/{skuId}.html")
     public String getSkuInfo(@PathVariable String skuId, HttpServletRequest request){
@@ -68,6 +72,8 @@ public class ItemController {
         request.setAttribute("skuImageList",skuImageList);
 
         request.setAttribute("skuInfo",skuInfo);
+
+        listService.incrHotScore(skuId);
 
         return "item";
 

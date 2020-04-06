@@ -18,4 +18,6 @@ public interface ListService {
      * @return
      */
     SkuLsResult search(SkuLsParams skuLsParams);
+
+    void incrHotScore(String skuId);
 }

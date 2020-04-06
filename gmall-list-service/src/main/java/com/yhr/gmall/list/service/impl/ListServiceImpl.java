@@ -4,11 +4,13 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.yhr.bean.SkuLsInfo;
 import com.yhr.bean.SkuLsParams;
 import com.yhr.bean.SkuLsResult;
+import com.yhr.gmall.config.RedisUtil;
 import com.yhr.service.ListService;
 import io.searchbox.client.JestClient;
 import io.searchbox.core.Index;
 import io.searchbox.core.Search;
 import io.searchbox.core.SearchResult;
+import io.searchbox.core.Update;
 import io.searchbox.core.search.aggregation.MetricAggregation;
 import io.searchbox.core.search.aggregation.TermsAggregation;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -21,6 +23,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.highlight.HighlightBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
+import redis.clients.jedis.Jedis;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,6 +39,9 @@ public class ListServiceImpl implements ListService{
     public static final String ES_INDEX="gmall";
 
     public static final String ES_TYPE="SkuInfo";
+
+    @Autowired
+    private RedisUtil redisUtil;
 
 
     @Override
@@ -68,6 +74,53 @@ public class ListServiceImpl implements ListService{
         SkuLsResult skuLsResult = makeResultForSearch(skuLsParams, searchResult);
 
         return skuLsResult;
+    }
+
+    @Override
+    public void incrHotScore(String skuId) {
+
+        Jedis jedis=redisUtil.getJedis();
+
+        //定义key
+        String hotKey="hotScore";
+
+        Double zincrby = jedis.zincrby(hotKey, 1, "skuId:" + skuId);
+
+        //按照一定的规则更新es
+        if(zincrby%10==0){
+
+            updateHotScore(skuId,  Math.round(zincrby));
+        }
+
+
+    }
+
+    /**
+     * 更新es
+     * @param skuId
+     * @param hotScore
+     */
+    private void updateHotScore(String skuId, long hotScore) {
+
+        String updateJson="{\n" +
+                "   \"doc\":{\n" +
+                "     \"hotScore\":"+hotScore+"\n" +
+                "   }\n" +
+                "}";
+
+        Update update = new Update.Builder(updateJson).index("gmall").type("SkuInfo").id(skuId).build();
+
+        try {
+
+            jestClient.execute(update);
+
+        } catch (IOException e) {
+
+            e.printStackTrace();
+
+        }
+
+
     }
 
     //设置返回结果

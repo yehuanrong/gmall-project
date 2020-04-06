@@ -7,6 +7,7 @@ import com.yhr.gmall.config.RedisUtil;
 import com.yhr.gmall.manager.constant.ManagerConst;
 import com.yhr.gmall.manager.mapper.*;
 import com.yhr.service.ManagerService;
+import org.apache.commons.lang.StringUtils;
 import org.redisson.Redisson;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -444,6 +445,15 @@ public class ManagerServiceImpl implements ManagerService{
     public List<SkuSaleAttrValue> getSkuSaleAttrValueListBySpu(String spuId) {
 
         return skuSaleAttrValueMapper.selectSkuSaleAttrValueListBySpu(spuId);
+    }
+
+    @Override
+    public List<BaseAttrInfo> getAttrList(List<String> attrValueIdList) {
+
+        //将集合变成字符串
+        String valueIds = StringUtils.join(attrValueIdList.toArray(), ",");
+
+        return baseAttrInfoMapper.selectAttrInfoListByIds(valueIds);
     }
 
 }
