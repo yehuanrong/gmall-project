@@ -1,4 +1,4 @@
-package com.yhr.gmall.list;
+package com.yhr.gmall.passport;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -6,10 +6,10 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @ComponentScan(basePackages = "com.yhr.gmall")
-public class GmallListWebApplication {
+public class GmallPassportWebApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(GmallListWebApplication.class, args);
+		SpringApplication.run(GmallPassportWebApplication.class, args);
 	}
 
 }

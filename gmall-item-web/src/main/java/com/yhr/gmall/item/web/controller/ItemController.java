@@ -6,6 +6,7 @@ import com.yhr.bean.SkuImage;
 import com.yhr.bean.SkuInfo;
 import com.yhr.bean.SkuSaleAttrValue;
 import com.yhr.bean.SpuSaleAttr;
+import com.yhr.gmall.config.LoginRequire;
 import com.yhr.service.ListService;
 import com.yhr.service.ManagerService;
 import org.springframework.stereotype.Controller;
@@ -25,6 +26,7 @@ public class ItemController {
     @Reference
     private ListService listService;
 
+    @LoginRequire
     @RequestMapping("/{skuId}.html")
     public String getSkuInfo(@PathVariable String skuId, HttpServletRequest request){
 
