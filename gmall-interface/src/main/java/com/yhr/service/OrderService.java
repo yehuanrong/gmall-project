@@ -31,4 +31,19 @@ public interface OrderService {
      * @param userId
      */
     void  delTradeCode(String userId);
+
+    /**
+     * 验证库存
+     * @param skuId
+     * @param skuNum
+     * @return
+     */
+    boolean checkStock(String skuId, Integer skuNum);
+
+    /**
+     * 根据orderId查询订单信息
+     * @param orderId
+     * @return
+     */
+    OrderInfo getOrderInfo(String orderId);
 }

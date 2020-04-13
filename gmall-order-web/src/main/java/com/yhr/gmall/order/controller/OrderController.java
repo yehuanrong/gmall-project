@@ -1,12 +1,10 @@
 package com.yhr.gmall.order.controller;
 
 import com.alibaba.dubbo.config.annotation.Reference;
-import com.yhr.bean.CartInfo;
-import com.yhr.bean.OrderDetail;
-import com.yhr.bean.OrderInfo;
-import com.yhr.bean.UserAddress;
+import com.yhr.bean.*;
 import com.yhr.gmall.config.LoginRequire;
 import com.yhr.service.CartService;
+import com.yhr.service.ManagerService;
 import com.yhr.service.OrderService;
 import com.yhr.service.UserService;
 import org.springframework.stereotype.Controller;
@@ -27,6 +25,9 @@ public class OrderController {
 
     @Reference
     private OrderService orderService;
+
+    @Reference
+    private ManagerService managerService;
 
    /* @RequestMapping("/trade")
     public String trade(){
@@ -98,7 +99,35 @@ public class OrderController {
            return "tradeFail";
        }
 
-       String orderId=orderService.saveOrder(orderInfo);
+       //验证库存
+       List<OrderDetail> orderDetailList = orderInfo.getOrderDetailList();
+
+       for (OrderDetail orderDetail : orderDetailList){
+
+           boolean flag = orderService.checkStock(orderDetail.getSkuId(), orderDetail.getSkuNum());
+           if (!flag) {
+               request.setAttribute("errMsg", orderDetail.getSkuName()+"商品库存不足，请重新下单！");
+
+               return "tradeFail";
+             }
+
+             //验证价格
+           SkuInfo skuInfo = managerService.getSkuInfo(orderDetail.getSkuId());
+
+           int res = skuInfo.getPrice().compareTo(orderDetail.getOrderPrice());
+
+           if(res!=0){
+
+               request.setAttribute("errMsg", orderDetail.getSkuName()+"价格不匹配！");
+
+               cartService.loadCartCache(userId);
+
+               return "tradeFail";
+           }
+
+       }
+
+           String orderId=orderService.saveOrder(orderInfo);
 
        //删除流水号
        orderService.delTradeCode(userId);

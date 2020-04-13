@@ -37,4 +37,12 @@ public interface CartService {
      * @return
      */
     List<CartInfo> getCartCheckedList(String userId);
+
+    /**
+     * 通过userId查询实时价格
+     * @param userId
+     * @return
+     */
+    List<CartInfo> loadCartCache(String userId);
+
 }

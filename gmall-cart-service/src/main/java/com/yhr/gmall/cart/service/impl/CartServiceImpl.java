@@ -268,7 +268,7 @@ public class CartServiceImpl implements CartService{
      * @param userId
      * @return
      */
-    private List<CartInfo> loadCartCache(String userId) {
+    public List<CartInfo> loadCartCache(String userId) {
 
         List<CartInfo> cartInfoList = cartMapper.selectCartListWithCurPrice(userId);
 

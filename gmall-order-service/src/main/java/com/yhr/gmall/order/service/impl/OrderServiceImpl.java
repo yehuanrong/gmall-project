@@ -8,6 +8,7 @@ import com.yhr.bean.enums.ProcessStatus;
 import com.yhr.gmall.config.RedisUtil;
 import com.yhr.gmall.order.mapper.OrderDetailMapper;
 import com.yhr.gmall.order.mapper.OrderInfoMapper;
+import com.yhr.gmall.util.HttpClientUtil;
 import com.yhr.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -104,5 +105,25 @@ public class OrderServiceImpl implements OrderService{
 
         jedis.close();
 
+    }
+
+    @Override
+    public boolean checkStock(String skuId, Integer skuNum) {
+        String result = HttpClientUtil.doGet("http://www.gware.com/hasStock?skuId=" + skuId + "&num=" + skuNum);
+
+        if ("1".equals(result)){
+
+            return  true;
+        }else {
+
+            return  false;
+        }
+
+    }
+
+    @Override
+    public OrderInfo getOrderInfo(String orderId) {
+
+        return orderInfoMapper.selectByPrimaryKey(orderId);
     }
 }
