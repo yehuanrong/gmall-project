@@ -32,4 +32,28 @@ public interface PaymentService {
 
     //微信支付
     Map createNative(String orderId, String total_fee);
+
+    /**
+     * 发送消息队列给订单
+     * @param paymentInfo
+     * @param result
+     */
+    void sendPaymentResult(PaymentInfo paymentInfo,String result);
+
+    /**
+     * 发送延迟队列
+     * @param outTradeNo
+     * @param delaySec
+     * @param checkCount
+     */
+    void sendDelayPaymentResult(String outTradeNo,int delaySec ,int checkCount);
+
+    //查询订单状态
+    boolean checkPayment(PaymentInfo paymentInfoQuery);
+
+    /**
+     * 关闭交易记录
+      * @param orderId
+     */
+    void closePayment(String orderId);
 }

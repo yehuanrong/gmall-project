@@ -100,6 +100,9 @@ public class PaymentController {
         }
         response.setContentType("text/html;charset=UTF-8");
 
+        //调用延迟队列
+        paymentService.sendDelayPaymentResult(paymentInfo.getOutTradeNo(),15,3);
+
         return form;
 
     }
@@ -155,6 +158,8 @@ public class PaymentController {
 
                 paymentService.updatePaymentInfo(out_trade_no,paymentInfoUpd);
 
+                //发送消息队列给订单：orderId,result
+                paymentService.sendPaymentResult(paymentInfo,"success");
 
                 return "success";
             }
@@ -190,5 +195,33 @@ public class PaymentController {
         return map;
 
     }
+
+    // 发送验证
+    @RequestMapping("sendPaymentResult")
+    @ResponseBody
+    public String sendPaymentResult(PaymentInfo paymentInfo,@RequestParam("result") String result){
+
+        paymentService.sendPaymentResult(paymentInfo,result);
+
+        return "sent payment result";
+    }
+
+
+    // 查询订单信息
+    @RequestMapping("queryPaymentResult")
+    @ResponseBody
+    public String queryPaymentResult(HttpServletRequest request){
+
+        String orderId = request.getParameter("orderId");
+
+        PaymentInfo paymentInfoQuery = new PaymentInfo();
+
+        paymentInfoQuery.setOrderId(orderId);
+
+        boolean flag = paymentService.checkPayment(paymentInfoQuery);
+
+        return ""+flag;
+    }
+
 
 }
